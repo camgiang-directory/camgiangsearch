@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Directory THPT Cẩm Giàng</title>
+    <!-- Font chữ và Icon -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        body {
+            background-color: #121212;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            width: 100%;
+            max-width: 600px;
+        }
+        .header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            background: linear-gradient(90deg, #ff8a00, #e52e71);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
+        }
+        .header p {
+            color: #a0a0a0;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+        .search-box {
+            position: relative;
+            width: 100%;
+        }
+        .search-box input {
+            width: 100%;
+            padding: 14px 20px 14px 45px;
+            background-color: #1e1e1e;
+            border: 1px solid #333;
+            border-radius: 30px;
+            color: #fff;
+            font-size: 15px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+        .search-box input:focus {
+            border-color: #e52e71;
+            box-shadow: 0 0 10px rgba(229, 46, 113, 0.2);
+        }
+        .search-box i {
+            position: absolute;
+            left: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #888;
+            font-size: 16px;
+        }
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            width: 100%;
+            max-width: 1000px;
+        }
+        .profile-card {
+            background-color: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            border-radius: 20px;
+            padding: 24px;
+            text-align: center;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+            transition: transform 0.3s ease, border-color 0.3s ease;
+        }
+        .profile-card:hover {
+            transform: translateY(-5px);
+            border-color: #444;
+        }
+        .avatar-wrapper {
+            width: 90px;
+            height: 90px;
+            margin: 0 auto 16px;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 2px solid #e52e71;
+            background-color: #333;
+        }
+        .avatar-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .nickname {
+            font-size: 13px;
+            color: #ff8a00;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        .fullname {
+            font-size: 18px;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 2px;
+        }
+        .className {
+            font-size: 13px;
+            color: #aaa;
+            margin-bottom: 10px;
+        }
+        .bio {
+            font-size: 13px;
+            color: #ccc;
+            margin-bottom: 20px;
+            font-style: italic;
+            word-break: break-word;
+        }
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+        }
+        .social-links a {
+            width: 36px;
+            height: 36px;
+            background-color: #2a2a2a;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            text-decoration: none;
+            transition: background 0.2s;
+        }
+        .social-links a.fb:hover { background-color: #1877f2; }
+        .social-links a.ig:hover { background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%); }
+        .social-links a.tt:hover { background-color: #000; border: 1px solid #444; }
+        .message-box {
+            grid-column: 1 / -1;
+            text-align: center;
+            color: #777;
+            padding: 50px;
+            font-size: 15px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>THPT Cẩm Giàng Directory</h1>
+        <p>Tìm kiếm thông tin, kết nối bạn bè toàn trường nhanh chóng ✨</p>
+        <div class="search-box">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="searchInput" placeholder="Nhập tên, biệt danh hoặc lớp để tìm kiếm..." onkeyup="filterProfiles()">
+        </div>
+    </div>
+
+    <div class="grid-container" id="profileGrid">
+        <div class="message-box">Đang tải dữ liệu từ Google Sheets...</div>
+    </div>
+
+    <script>
+        // THAY ĐOẠN DƯỚI BẰNG LINK CSV CÔNG KHAI TỪ GOOGLE SHEETS CỦA BẠN
+        const SHEET_CSV_URL = 'YOUR_GOOGLE_SHEET_CSV_LINK_HERE';
+
+        let allProfiles = [];
+
+        async function loadSheetData() {
+            if (SHEET_CSV_URL.includes('YOUR_GOOGLE_SHEET')) {
+                document.getElementById('profileGrid').innerHTML = '<div class="message-box">Vui lòng cấu hình đường link Google Sheets CSV vào biến SHEET_CSV_URL trong mã nguồn!</div>';
+                return;
+            }
+
+            try {
+                const response = await fetch(SHEET_CSV_URL);
+                const data = await response.text();
+                parseCSV(data);
+            } catch (error) {
+                document.getElementById('profileGrid').innerHTML = '<div class="message-box">Không thể tải được dữ liệu từ Google Sheets. Hãy kiểm tra lại quyền chia sẻ file!</div>';
+            }
+        }
+
+        function parseCSV(text) {
+            let lines = text.split('\n');
+            allProfiles = [];
+
+            // Bỏ qua dòng tiêu đề (Header)
+            for (let i = 1; i < lines.length; i++) {
+                let line = lines[i].trim();
+                if (!line) continue;
+
+                let row = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(item => item.replace(/^"|"$/g, '').trim());
+                
+                if (row.length >= 8) {
+                    allProfiles.push({
+                        bietDanh: row[0] || '',
+                        hoTen: row[1] || '',
+                        lop: row[2] || '',
+                        bio: row[3] || '',
+                        avatar: row[4] || 'https://via.placeholder.com/150',
+                        facebook: row[5] || '#',
+                        instagram: row[6] || '#',
+                        tiktok: row[7] || '#'
+                    });
+                }
+            }
+
+            renderProfiles(allProfiles);
+        }
+
+        function renderProfiles(profiles) {
+            let grid = document.getElementById('profileGrid');
+            if (profiles.length === 0) {
+                grid.innerHTML = '<div class="message-box">Chưa có học sinh nào điền thông tin cả. Hãy chia sẻ form để mọi người cùng tham gia nhé!</div>';
+                return;
+            }
+
+            let html = '';
+            profiles.forEach(p => {
+                let searchString = `${p.bietDanh} ${p.hoTen} ${p.lop}`.toLowerCase();
+                html += `
+                    <div class="profile-card" data-search="${searchString}">
+                        <div class="avatar-wrapper">
+                            <img src="${p.avatar}" alt="Avatar" onerror="this.src='https://via.placeholder.com/150'">
+                        </div>
+                        <div class="nickname">"${p.bietDanh}"</div>
+                        <div class="fullname">${p.hoTen}</div>
+                        <div class="className">${p.lop}</div>
+                        <div class="bio">${p.bio}</div>
+                        <div class="social-links">
+                            ${p.facebook !== '#' ? `<a href="${p.facebook}" class="fb" target="_blank"><i class="fa-brands fa-facebook-f"></i></a>` : ''}
+                            ${p.instagram !== '#' ? `<a href="${p.instagram}" class="ig" target="_blank"><i class="fa-brands fa-instagram"></i></a>` : ''}
+                            ${p.tiktok !== '#' ? `<a href="${p.tiktok}" class="tt" target="_blank"><i class="fa-brands fa-tiktok"></i></a>` : ''}
+                        </div>
+                    </div>
+                `;
+            });
+            grid.innerHTML = html;
+        }
+
+        function filterProfiles() {
+            let input = document.getElementById('searchInput').value.toLowerCase();
+            let cards = document.getElementsByClassName('profile-card');
+
+            for (let i = 0; i < cards.length; i++) {
+                let searchData = cards[i].getAttribute('data-search');
+                if (searchData.includes(input)) {
+                    cards[i].style.display = "";
+                } else {
+                    cards[i].style.display = "none";
+                }
+            }
+        }
+
+        loadSheetData();
+    </script>
+</body>
+</html>
